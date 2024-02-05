@@ -26,7 +26,7 @@ def plot_image():
 
 # Define UI for image upload and display
 def app():
-    st.title("Streamlit App with Interactive Matplotlib Figure")
+    st.title("GVA-holes")
     fig = imageupload()
     # Display the image using Matplotlib in Streamlit
     #fig = plot_image()
