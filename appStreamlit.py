@@ -6,12 +6,13 @@ import streamlit as st
 from streamlit_cropper import st_cropper
 from streamlit_drawable_canvas import st_canvas
 
-# Define UI for image upload and display
-def app():
-    st.title("GVA-holes")
+#Put instructions for the user
+instructions1 = "Welcome to the GVA-holes website. If you are reading this, you're probably a super cool person that loves to calculate bacterial concentrations. If so, please follow the instructions below:"
+instructions2 = "First, you'll upload your image. It will show up three times. On the first one, move the red crop box so that it is fully around the top pipette. On the second one, move the blue crop box so that it is fully around the middle pipette in the image. On the third, move the green crop box so that it is fully around the bottom pipette in the image."
+
 
 #configure webpage
-st.set_page_config(page_title="GVA-holes", page_icon="🖼️")
+st.set_page_config(page_title="GVA-holes", page_icon="🆘", layout="wide")
 
 #all functions are here
 #function to adjust image brightness and contrast to increase clarity of colonies
@@ -22,6 +23,7 @@ def adjust_image(uploaded_image):
     enhancer = ImageEnhance.Brightness(pil_image)
     pil_image = enhancer.enhance(1.5)
     return pil_image
+
 
 # Upload image through Streamlit
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
@@ -41,11 +43,11 @@ if uploaded_images is not None:
         cropped_image_name2 = "Middle Pipette" + " " + file_name
         cropped_image_name3 = "Bottom Pipette" + " " + file_name
          # Use st_cropper for interactive cropping
-        st.text("Please draw a red box around the top pipette in the image below, then double click to crop.")
+        st.markdown("Please draw a red box around the top pipette in the image below, then double click to crop.")
         cropped_image1 = st_cropper(adjusted_image, box_color="red", realtime_update=False)
-        st.text("Please draw a blue box around the middle pipette in the image below, then double click to crop..")
+        st.markdown("Please draw a blue box around the middle pipette in the image below, then double click to crop.")
         cropped_image2 = st_cropper(adjusted_image, box_color="blue", realtime_update= False)
-        st.text("Please draw a green box around the bottom pipette in the image below, then double click to crop..")
+        st.markdown("Please draw a green box around the bottom pipette in the image below, then double click to crop.")
         cropped_image3 = st_cropper(adjusted_image, box_color ="green", realtime_update=False)
     # Display the cropped image
         #cropped_image_1 = st.image(cropped_image1, caption=cropped_image_name1, use_column_width=True)
@@ -77,19 +79,28 @@ if uploaded_images is not None:
             bg_color = st.sidebar.color_picker("Background color hex: ", "#eee")
 
         width1, height1 = cropped_image1.size
+        aspect_ratio1 = width1 / height1
 
-        # Create a canvas component
-        canvas_result = st_canvas(
-            fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
+        width2, height2 = cropped_image2.size
+        aspect_ratio2 = width2 / height2
+
+        width3, height3 = cropped_image3.size
+        aspect_ratio3 = width3 / height3
+        
+        # Create a canvas component for each image
+        canvas_result1 = st_canvas(
+            fill_color="rgba(255, 255, 255, 0)", # Fixed fill color with some opacity
             stroke_width=stroke_width,
             stroke_color=stroke_color,
             background_color=bg_color,
             background_image=bg_image,
             update_streamlit=realtime_update,
             drawing_mode=drawing_mode,
-            point_display_radius=point_display_radius,
-            key="canvas",
+            point_display_radius=point_display_radius if drawing_mode == "point" else 0,
+            display_toolbar=st.sidebar.checkbox("Display toolbar", True),
+            height = 700 / aspect_ratio1,
+            width = 700,
+            key = None
         )
 
-if __name__ == '__main__':
-    app()
+
