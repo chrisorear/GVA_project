@@ -62,6 +62,8 @@ def canvas(cropped_image):
 # Upload image through Streamlit
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
 
+if 'uploaded_images' not in st.session_state:
+    st.session_state.uploaded_images = []
 #run code for uploaded images
 if uploaded_images is not None:
     for uploaded_image in uploaded_images:
@@ -72,7 +74,6 @@ if uploaded_images is not None:
         #open and adjust image
         adjusted_image = adjust_image(uploaded_image)
         #define number of "crop regions" and find the width and height of the image in pixels
-        num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3, key = file_name)
         width1, height1 = adjusted_image.size
         cropped_images = []
 
@@ -80,8 +81,9 @@ if uploaded_images is not None:
         st.session_state.uploaded_images.append(adjusted_image)
 
     for i, image in enumerate(st.session_state.uploaded_images):
-        if st.sidebar.button(f"View Image {i+1}", key = f"Image {i+1}"):
+        if st.sidebar.button(file_name, key = f"{i} + {file_name}"):
             st.title(f"Image {i+1}")
+            num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3, key = file_name)
             #st.session_state.image_states[f"Image {i+1}"] = True
             #for number of crop regions, crop and display on drawable canvas using canvas function
             for j in range(num_regions):
