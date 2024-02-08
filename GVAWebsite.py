@@ -9,7 +9,7 @@ import mpld3
 import streamlit.components as components
 from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
-
+import os
 
 #Put instructions for the user
 instructions1 = "Welcome to the GVA-holes website. If you are reading this, you're probably a super cool person that loves to calculate bacterial concentrations, in other words, you're a GVA-hole. If so, please follow the instructions below:"
@@ -37,8 +37,8 @@ def canvas(cropped_image):
     drawing_mode = "point"
     width1, height1 = cropped_image.size
     stroke_width = 1
-    point_display_radius = 0
-    stroke_color = ""
+    point_display_radius = 2
+    stroke_color = "black"
     bg_color = ""
     aspect_ratio1 = width1 / height1
     bg_image = cropped_image
@@ -70,17 +70,24 @@ if uploaded_images is not None:
         adjusted_image = adjust_image(uploaded_image)
         num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
         width1, height1 = adjusted_image.size
-        box_coords = (0, width1, 2/3*height1, height1)
+        #box_coords = (0, width1, 2/3*height1, height1)
         cropped_images = []
 
         for i in range(num_regions):
             st.subheader(f"Crop Region {i+1}")
- 
+            box_coords = (0, width1, (i)/3*height1, (i+1)/3*height1)
             # Perform cropping with a unique key for each st_cropper widget
             cropped_images.append(st_cropper(adjusted_image, default_coords = box_coords, key=f"cropper_{i}"))
             st.write("Cropping Box Coordinates:", box_coords)
             # Display the cropped image
             canvas(cropped_images[i])
+            image_data = canvas_result1._st_image_data
+            directory_path = os.path.dirname(file_name)
+            file_path = os.path.join(directory_path, f"region_{i}")
+            if image_data is not None:
+                with open("canvas_image.png", "wb") as f:
+                    f.write(image_data)
+
 
 
 #py -m streamlit run "C:\Users\argud\OneDrive\Desktop\Spring 2024\Senior Design\Website Code\GVAWebsite.py"
