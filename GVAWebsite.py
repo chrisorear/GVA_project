@@ -7,14 +7,12 @@ import cv2
 import matplotlib.pyplot as plt
 import mpld3
 import streamlit.components as components
-import panel as pn
-import holoviews as hv
 from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
-import plotly.graph_objects as go
+
 
 #Put instructions for the user
-instructions1 = "Welcome to the GVA-holes website. If you are reading this, you're probably a super cool person that loves to calculate bacterial concentrations. If so, please follow the instructions below:"
+instructions1 = "Welcome to the GVA-holes website. If you are reading this, you're probably a super cool person that loves to calculate bacterial concentrations, in other words, you're a GVA-hole. If so, please follow the instructions below:"
 instructions2 = "First, you'll upload your image. It will show up three times. On the first one, move the red crop box so that it is fully around the top pipette. On the second one, move the blue crop box so that it is fully around the middle pipette in the image. On the third, move the green crop box so that it is fully around the bottom pipette in the image."
 
 #configure webpage
@@ -70,16 +68,14 @@ if uploaded_images is not None:
 
         #open and adjust image
         adjusted_image = adjust_image(uploaded_image)
-
-        num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=1)
-        
+        num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
         width1, height1 = adjusted_image.size
         box_coords = (0, width1, 2/3*height1, height1)
         cropped_images = []
 
         for i in range(num_regions):
             st.subheader(f"Crop Region {i+1}")
-
+ 
             # Perform cropping with a unique key for each st_cropper widget
             cropped_images.append(st_cropper(adjusted_image, default_coords = box_coords, key=f"cropper_{i}"))
             st.write("Cropping Box Coordinates:", box_coords)
