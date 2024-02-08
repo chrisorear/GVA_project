@@ -81,6 +81,9 @@ if uploaded_images is not None:
             st.write("Cropping Box Coordinates:", box_coords)
             # Display the cropped image
             canvas(cropped_images[i])
+            
+            
+            #broken code - doesn't run but maybe a good start point for saving resulting cropped images w drawings to a folder on computer
             image_data = canvas_result1._st_image_data
             directory_path = os.path.dirname(file_name)
             file_path = os.path.join(directory_path, f"region_{i}")
