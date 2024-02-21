@@ -124,5 +124,5 @@ if uploaded_images is not None:
                         x2 = np.min(colonies)*convertH
                         st.write("x2",x2)
                         x1 = np.max(colonies)*convertH
-                        CFUs = len(colonies)/(np.absolute((np.power(x2,3) - np.power(x1,3)))/(3*36^2)*np.pi*1.995)
+                        CFUs = len(colonies)/(np.absolute((np.power(x2,3) - np.power(x1,3)))/(1000*(3*36^2)*np.pi*1.995))
                         st.write("CFUs/mL",CFUs)
