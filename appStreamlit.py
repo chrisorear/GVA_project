@@ -55,7 +55,7 @@ def canvas(cropped_image):
         display_toolbar=True,
         height = 700 / aspect_ratio1,
         width = 700,
-        key = f"image_{i}"
+        key = f"image_{file_name}"
         )
     return canvas_result1
 
@@ -68,33 +68,28 @@ if 'uploaded_images' not in st.session_state:
 if uploaded_images is not None:
     for uploaded_image in uploaded_images:
         file_name = uploaded_image.name
-        #define empty list for session states (pages on website for each image)
-        st.session_state.uploaded_images = []
 
         #open and adjust image
         adjusted_image = adjust_image(uploaded_image)
+        #initialize new session state for each image
+        st.session_state.uploaded_images.append(adjusted_image)
         #define number of "crop regions" and find the width and height of the image in pixels
         width1, height1 = adjusted_image.size
         cropped_images = []
 
-        #initialize new session state for each image
-        st.session_state.uploaded_images.append(adjusted_image)
-
-    for i, image in enumerate(st.session_state.uploaded_images):
-        if st.sidebar.button(file_name, key = f"{i} + {file_name}"):
-            st.title(f"Image {i+1}")
+        if st.sidebar.button(file_name, key = f"File + {file_name}"):
+            st.title(f"Image {file_name}")
             num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3, key = file_name)
-            #st.session_state.image_states[f"Image {i+1}"] = True
             #for number of crop regions, crop and display on drawable canvas using canvas function
             for j in range(num_regions):
                 st.subheader(f"Crop Region {j+1}")
                 box_coords = (0, width1, (j)/3*height1, (j+1)/3*height1)
-                # Perform cropping with a unique key for each st_cropper widget
+                    # Perform cropping with a unique key for each st_cropper widget
                 cropped_images.append(st_cropper(adjusted_image, default_coords = box_coords, key=f"cropper_{j}"))
                 st.write("Cropping Box Coordinates:", box_coords)
                 # Display the cropped image
                 img = canvas(cropped_images[j])
-            
+                
         
 
        

@@ -1,48 +1,36 @@
+
 import streamlit as st
 from PIL import Image
 
-# Function to initialize session state
-def init_session_state():
-    if 'uploaded_images' not in st.session_state:
-        st.session_state.uploaded_images = []
+import streamlit as st
+from PIL import Image
 
-# Function to process uploaded images
-def process_uploaded_images(uploaded_images):
-    for uploaded_image in uploaded_images:
-        st.session_state.uploaded_images.append(uploaded_image)
+# Function to load and display the image
+def load_image(image_file):
+    img = Image.open(image_file)
+    st.image(img, use_column_width=True)
 
-# Function to display the current image
-def display_image(image_index):
-    if st.session_state.uploaded_images:
-        current_image = st.session_state.uploaded_images[image_index]
-        st.image(current_image, caption=f"Image {image_index + 1}/{len(st.session_state.uploaded_images)}", use_column_width=True)
+# Main function
+def main():
+    st.title('Image Viewer')
 
-# Main title
-st.title("Multiple Image Viewer")
+    # Define a dictionary to store image names and their corresponding file objects
+    images = {}
 
-# Initialize session state
-init_session_state()
+    # File uploader
+    uploaded_files = st.sidebar.file_uploader("Upload Image Files", accept_multiple_files=True)
 
-# Upload multiple images
-uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+    # Add uploaded files to images dictionary
+    if uploaded_files:
+        for uploaded_file in uploaded_files:
+            images[uploaded_file.name] = uploaded_file
 
-# Process uploaded images
-if uploaded_images:
-    process_uploaded_images(uploaded_images)
+    # Sidebar to select image
+    selected_image = st.sidebar.selectbox("Select Image", list(images.keys()), index=0)
 
-# Show the current image index
-if 'image_index' not in st.session_state:
-    st.session_state.image_index = 0
+    # Display selected image
+    if selected_image:
+        load_image(images[selected_image])
 
-# Display the current image
-display_image(st.session_state.image_index)
-
-# Button to display the previous image
-if st.session_state.image_index > 0:
-    if st.button("Previous Image"):
-        st.session_state.image_index -= 1
-
-# Button to display the next image
-if st.session_state.image_index < len(st.session_state.uploaded_images) - 1:
-    if st.button("Next Image"):
-        st.session_state.image_index += 1
+if __name__ == '__main__':
+    main()
