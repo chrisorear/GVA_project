@@ -70,7 +70,7 @@ if uploaded_images is not None:
         file_name = uploaded_image.name
         #define empty list for session states (pages on website for each image)
         st.session_state.uploaded_images = []
-    
+
         #open and adjust image
         adjusted_image = adjust_image(uploaded_image)
         #define number of "crop regions" and find the width and height of the image in pixels
