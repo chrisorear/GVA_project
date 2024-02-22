@@ -28,7 +28,7 @@ def canvas(cropped_image):
     drawing_mode = "point"
     width1, height1 = cropped_image.size
     stroke_width = 1
-    point_display_radius = 2
+    point_display_radius = 0.5
     stroke_color = "black"
     bg_color = ""
     aspect_ratio1 = width1 / height1
@@ -44,18 +44,18 @@ def canvas(cropped_image):
         drawing_mode=drawing_mode,
         point_display_radius=point_display_radius if drawing_mode == "point" else 0,
         display_toolbar=True,
-        height = 700 / aspect_ratio1,
-        width = 700,
-        key = f"file_name, {i}"
+        height = 1000 / aspect_ratio1,
+        width = 1000,
+        key = f"{i}" + f"{file_name}"
         )
     return canvas_result1
 #function to crop images into 3 separate things
 def image_cropper(num_regions):
     for i in range(num_regions):
-        st.subheader(f"Crop Region {i+1}")
+        st.subheader(f"{file_name}" + " " + f"Crop Region {i+1}")
         box_coords = (0, width1, (i)/3*height1, (i+1)/3*height1)
         # Perform cropping with a unique key for each st_cropper widget
-        cropped_images.append(st_cropper(adjusted_image, default_coords = box_coords, key=f"cropper_{i}"))
+        cropped_images.append(st_cropper(adjusted_image, default_coords = box_coords, key=f"cropper_{i}" + f"{file_name}"))
     return cropped_images   
 #function to pull colony location from canvas as you click on colonies
 def colonyfunc(drawable):            
@@ -84,30 +84,20 @@ def GVAcalc(colonies):
 
 # Upload image through Streamlit
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
+num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
 
 if uploaded_images is not None:
-    uploaded_images_list = list(uploaded_images)
-    image_counter = 0  # Counter to keep track of the current image being displayed
-    while image_counter < len(uploaded_images_list):
-        uploaded_image = uploaded_images_list[image_counter]
+    for uploaded_image in uploaded_images:
         file_name = uploaded_image.name
-        # Open and adjust image
+        #open and adjust image
         adjusted_image = adjust_image(uploaded_image)
         width1, height1 = adjusted_image.size
-        num_regions = 3
         cropped_images = []
         cropped_images = image_cropper(num_regions)
-        # Display the cropped images and drawable canvas
         for i, image in enumerate(cropped_images):
             drawable = canvas(image)
             colonies = colonyfunc(drawable)
+            st.write(colonies)
             if colonies is not None:
                 GVAcalc(colonies)
-        # Add a next button to navigate to the next image
-            if image_counter < len(uploaded_images_list) - 1:
-                if st.button("Next"):
-                    image_counter += 1
-                else:
-                    st.write("No more images to display.")
-                    break
         
