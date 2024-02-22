@@ -86,21 +86,28 @@ def GVAcalc(colonies):
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
 
 if uploaded_images is not None:
-    for uploaded_image in uploaded_images:
+    uploaded_images_list = list(uploaded_images)
+    image_counter = 0  # Counter to keep track of the current image being displayed
+    while image_counter < len(uploaded_images_list):
+        uploaded_image = uploaded_images_list[image_counter]
         file_name = uploaded_image.name
-        #open and adjust image
+        # Open and adjust image
         adjusted_image = adjust_image(uploaded_image)
-        num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
         width1, height1 = adjusted_image.size
-        #box_coords = (0, width1, 2/3*height1, height1)
+        num_regions = 3
         cropped_images = []
-        j = 0
-        image_cropper(num_regions)
-        
-        # Display the cropped image 
+        cropped_images = image_cropper(num_regions)
+        # Display the cropped images and drawable canvas
         for i, image in enumerate(cropped_images):
             drawable = canvas(image)
             colonies = colonyfunc(drawable)
             if colonies is not None:
                 GVAcalc(colonies)
-
+        # Add a next button to navigate to the next image
+            if image_counter < len(uploaded_images_list) - 1:
+                if st.button("Next"):
+                    image_counter += 1
+                else:
+                    st.write("No more images to display.")
+                    break
+        
