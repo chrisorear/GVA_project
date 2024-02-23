@@ -1,19 +1,18 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from PIL import Image, ImageEnhance, ImageDraw
-import io
-import cv2
-import matplotlib.pyplot as plt
-import mpld3
-import streamlit.components as components
+from PIL import Image, ImageEnhance
 from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
-import plotly.graph_objects as go
+
 #Put instructions for the user - TO DO
+Intro = "If you’re here, you must be someone who loves to find bacteria concentrations on a budget. Who needs MATLAB anyway? Before you go on to use the website, please read the instructions carefully. Any further questions can be directed to gvahelp@gmail.com. We sincerely hope you enjoy the website. -	A couple of GVA-holes"
+Instructions = "Instructions: First, upload your images (maximum of three at a time as of 2/22/24). First, set the number of crop regions to the number of pipette tips per image. Then, place the crop boxes around each pipette tip in the images that load. Finally, scroll down to below the images where the cropped pipette tips appear. Click once at the very end of the pipette tip, and once at the top of the agarose gel inside of the tip. Then, select 5-10 colonies as close to the tip as possible. Finally, press the Send to Streamlit button just below the bottom left of the image and record the results that appear."
 
 #configure webpage
 st.set_page_config(page_title="GVA-holes", page_icon="🆘", layout="wide")
+st.markdown(Intro)
+st.markdown(Instructions)
 #all functions are here
 #function to adjust image brightness and contrast to increase clarity of colonies
 def adjust_image(uploaded_image):
@@ -82,15 +81,17 @@ def GVAcalc(colonies):
         CFUs = len(colonies)/(np.absolute((np.power(x2,3) - np.power(x1,3)))/(1000*(3*36^2)*np.pi*1.995))
         st.write("CFUs/mL",CFUs)
 
+
 # Upload image through Streamlit
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
 num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
 
 if uploaded_images is not None:
     for uploaded_image in uploaded_images:
-        file_name = uploaded_image.name
+        current_image = uploaded_image
+        file_name = current_image.name
         #open and adjust image
-        adjusted_image = adjust_image(uploaded_image)
+        adjusted_image = adjust_image(current_image)
         width1, height1 = adjusted_image.size
         cropped_images = []
         cropped_images = image_cropper(num_regions)
