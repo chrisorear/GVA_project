@@ -17,10 +17,11 @@ st.markdown(Instructions)
 #function to adjust image brightness and contrast to increase clarity of colonies
 def adjust_image(uploaded_image):
     pil_image = Image.open(uploaded_image)
+    #pil_image = pil_image.rotate(90)
     enhancer = ImageEnhance.Contrast(pil_image)
     pil_image = enhancer.enhance(2)
     enhancer = ImageEnhance.Brightness(pil_image)
-    pil_image = enhancer.enhance(1.5)
+    pil_image = enhancer.enhance(1)
     return pil_image
 #function to make the cropped images drawable
 def canvas(cropped_image):
@@ -68,23 +69,24 @@ def colonyfunc(drawable):
 #function to do GVA calculations from the clicked colony data
 def GVAcalc(colonies):
     h = np.max(colonies) - np.min(colonies)
-    convertH = 36/h
     max = np.max
+    min = np.min
     #Removes min and mix values because they are not colonies
     colonies.remove(max(colonies))
     colonies.remove(min(colonies))
     if len(colonies) >= 1:
         st.write("Pipette Length in pixels", h)
         st.write("Colony Locations", colonies)
-        x2 = np.min(colonies)*convertH
-        x1 = np.max(colonies)*convertH
-        CFUs = len(colonies)/(np.absolute((np.power(x2,3) - np.power(x1,3)))/(1000*(3*36^2)*np.pi*1.995))
+        x2 = np.min(colonies)
+        x1 = np.max(colonies)
+        CFUs = len(colonies)/(np.absolute((np.power(x2,3) - np.power(x1,3)))/(1000*(3*np.power(h,2))*np.pi*1.995))*df
         st.write("CFUs/mL",CFUs)
 
 
 # Upload image through Streamlit
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
 num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
+df = st.number_input("Dilution Factor", min_value=1, max_value=10000, value=100)
 
 if uploaded_images is not None:
     for uploaded_image in uploaded_images:
