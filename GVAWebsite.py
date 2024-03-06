@@ -26,12 +26,12 @@ def adjust_image(uploaded_image):
 #function to make the cropped images drawable
 def canvas(cropped_image):
     drawing_mode = "point"
-    width1, height1 = cropped_image.size
+    width, height = cropped_image.size
     stroke_width = 1
     point_display_radius = 0.5
     stroke_color = "black"
     bg_color = ""
-    aspect_ratio1 = width1 / height1
+    aspect_ratio = width / height
     bg_image = cropped_image
         # Create a canvas component for each image
     canvas_result1 = st_canvas(
@@ -39,23 +39,24 @@ def canvas(cropped_image):
         stroke_width=stroke_width,
         stroke_color=stroke_color,
         background_color=bg_color,
-        background_image=bg_image,
+        background_image=bg_image.rotate(90),
         update_streamlit=False,
         drawing_mode=drawing_mode,
         point_display_radius=point_display_radius if drawing_mode == "point" else 0,
         display_toolbar=True,
-        height = 1000 / aspect_ratio1,
-        width = 1000,
+        height = 1000*aspect_ratio,
+        width = 1000 ,
         key = f"{i}" + f"{file_name}"
         )
+    st.write(aspect_ratio)
     return canvas_result1
 #function to crop images into 3 separate things
 def image_cropper(num_regions):
     for i in range(num_regions):
         st.subheader(f"{file_name}" + " " + f"Crop Region {i+1}")
-        box_coords = (0, width1, (i)/3*height1, (i+1)/3*height1)
+        box_coords = ((i)/3 * width, (i+1)/3 * width, 0, height)
         # Perform cropping with a unique key for each st_cropper widget
-        cropped_images.append(st_cropper(adjusted_image, default_coords = box_coords, key=f"cropper_{i}" + f"{file_name}"))
+        cropped_images.append(st_cropper(adjusted_image, default_coords = box_coords, key=f"cropper_{i}" + f"{file_name}", realtime_update= True))
     return cropped_images   
 #function to pull colony location from canvas as you click on colonies
 def colonyfunc(drawable):            
@@ -94,13 +95,14 @@ if uploaded_images is not None:
         file_name = current_image.name
         #open and adjust image
         adjusted_image = adjust_image(current_image)
-        width1, height1 = adjusted_image.size
+        width, height = adjusted_image.size
         cropped_images = []
         cropped_images = image_cropper(num_regions)
-        for i, image in enumerate(cropped_images):
-            drawable = canvas(image)
-            colonies = colonyfunc(drawable)
-            st.write(colonies)
-            if colonies is not None:
-                GVAcalc(colonies)
-        
+        #need to put a break here somehow
+    for i, image in enumerate(cropped_images):
+        drawable = canvas(image)
+        colonies = colonyfunc(drawable)
+        st.write(colonies)
+        if colonies is not None:
+            GVAcalc(colonies)
+                
