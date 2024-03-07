@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image, ImageEnhance
 from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
+import cv2
 
 #Put instructions for the user - TO DO
 Intro = "If you’re here, you must be someone who loves to find bacteria concentrations on a budget. Who needs MATLAB anyway? Before you go on to use the website, please read the instructions carefully. Any further questions can be directed to gvahelp@gmail.com. We sincerely hope you enjoy the website. -	A couple of GVA-holes"
@@ -44,7 +45,7 @@ def canvas(cropped_image):
         drawing_mode=drawing_mode,
         point_display_radius=point_display_radius if drawing_mode == "point" else 0,
         display_toolbar=True,
-        height = 1000*aspect_ratio,
+        height = 1000 / aspect_ratio,
         width = 1000 ,
         key = f"{i}" + f"{file_name}"
         )
@@ -99,10 +100,11 @@ if uploaded_images is not None:
         cropped_images = []
         cropped_images = image_cropper(num_regions)
         #need to put a break here somehow
-    for i, image in enumerate(cropped_images):
-        drawable = canvas(image)
-        colonies = colonyfunc(drawable)
-        st.write(colonies)
-        if colonies is not None:
-            GVAcalc(colonies)
-                
+    if st.button("crop images"):
+        for i, image in enumerate(cropped_images):
+            drawable = canvas(image)
+            colonies = colonyfunc(drawable)
+            st.write(colonies)
+            if colonies is not None:
+                GVAcalc(colonies)
+              
