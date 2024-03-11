@@ -40,13 +40,13 @@ def canvas(cropped_image):
         stroke_width=stroke_width,
         stroke_color=stroke_color,
         background_color=bg_color,
-        background_image=bg_image.rotate(90),
+        background_image=bg_image,
         update_streamlit=False,
         drawing_mode=drawing_mode,
         point_display_radius=point_display_radius if drawing_mode == "point" else 0,
         display_toolbar=True,
-        height = 1000 / aspect_ratio,
-        width = 1000 ,
+        height = height*0.25,
+        width = width*0.25,
         key = f"{i}" + f"{file_name}"
         )
     st.write(aspect_ratio)
@@ -100,7 +100,6 @@ if uploaded_images is not None:
         cropped_images = []
         cropped_images = image_cropper(num_regions)
         #need to put a break here somehow
-    if st.button("crop images"):
         for i, image in enumerate(cropped_images):
             drawable = canvas(image)
             colonies = colonyfunc(drawable)
