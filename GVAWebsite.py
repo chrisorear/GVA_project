@@ -7,7 +7,7 @@ from streamlit_cropper import st_cropper
 import cv2
 
 #Put instructions for the user - TO DO
-Intro = "If you’re here, you must be someone who loves to find bacteria concentrations on a budget. Who needs MATLAB anyway? Before you go on to use the website, please read the instructions carefully. Any further questions can be directed to gvahelp@gmail.com. We sincerely hope you enjoy the website. -	A couple of GVA-holes"
+Intro = "If you’re here, you must be someone who loves to find bacteria concentrations on a budget. Who needs MATLAB anyway? Before you go on to use the website, please read the instructions carefully. Any further questions can be directed to gvahelp@gmail.com. We sincerely hope you enjoy the website. -    A couple of GVA-holes"
 Instructions = "Instructions: First, upload your images (maximum of three at a time as of 2/22/24). First, set the number of crop regions to the number of pipette tips per image. Then, place the crop boxes around each pipette tip in the images that load. Finally, scroll down to below the images where the cropped pipette tips appear. Click once at the very end of the pipette tip, and once at the top of the agarose gel inside of the tip. Then, select 5-10 colonies as close to the tip as possible. Finally, press the Send to Streamlit button just below the bottom left of the image and record the results that appear."
 
 #configure webpage
@@ -30,7 +30,7 @@ def canvas(cropped_image):
     width, height = cropped_image.size
     stroke_width = 1
     point_display_radius = 0.5
-    stroke_color = "black"
+    stroke_color = "red"
     bg_color = ""
     aspect_ratio = width / height
     bg_image = cropped_image
@@ -55,7 +55,7 @@ def canvas(cropped_image):
 def image_cropper(num_regions):
     for i in range(num_regions):
         st.subheader(f"{file_name}" + " " + f"Crop Region {i+1}")
-        box_coords = ((i)/3 * width, (i+1)/3 * width, 0, height)
+        box_coords = ((i)/3 * width, (i+1)/3 * width, 0, 4/5*height)
         # Perform cropping with a unique key for each st_cropper widget
         cropped_images.append(st_cropper(adjusted_image, default_coords = box_coords, key=f"cropper_{i}" + f"{file_name}", realtime_update= True))
     return cropped_images   
@@ -65,30 +65,34 @@ def colonyfunc(drawable):
         colonies = []
         objects = pd.json_normalize(drawable.json_data["objects"]) # need to convert obj to str because PyArrow
         for col in objects.select_dtypes(include=['object']).columns:
-            left = objects["left"].astype("double")
-            colonies = left.tolist()
+            top = objects["top"].astype("double")
+            colonies = top.tolist()
             return colonies           
 #function to do GVA calculations from the clicked colony data
 def GVAcalc(colonies):
     h = np.max(colonies) - np.min(colonies)
     max = np.max
     min = np.min
-    #Removes min and mix values because they are not colonies
+    #save the tip location
+    tiploc = max(colonies)
+    #Removes min and mix values because they are not colonies, they are the tip location and the top of the assay
     colonies.remove(max(colonies))
     colonies.remove(min(colonies))
+    #GVA calculations
     if len(colonies) >= 1:
         st.write("Pipette Length in pixels", h)
-        st.write("Colony Locations", colonies)
-        x2 = np.min(colonies)
-        x1 = np.max(colonies)
-        CFUs = len(colonies)/(np.absolute((np.power(x2,3) - np.power(x1,3)))/(1000*(3*np.power(h,2))*np.pi*1.995))*df
+        #st.write("Colony Locations", colonies)
+        x1 = np.max(colonies) - tiploc
+        x2 = np.min(colonies) - tiploc
+        CFUs = df*len(colonies)/(V/1000*np.absolute(np.power(x2,3)-np.power(x1,3))/np.power(h,3))
         st.write("CFUs/mL",CFUs)
 
 
-# Upload image through Streamlit
+# Upload image through Streamlit, get all necessary inputs
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
 num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
 df = st.number_input("Dilution Factor", min_value=1, max_value=10000, value=100)
+V = st.number_input("Assay Volume (µL)", min_value = 1, max_value = 1000, value = 150)
 
 if uploaded_images is not None:
     for uploaded_image in uploaded_images:
@@ -106,4 +110,4 @@ if uploaded_images is not None:
             st.write(colonies)
             if colonies is not None:
                 GVAcalc(colonies)
-              
+      
