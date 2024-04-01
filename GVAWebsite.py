@@ -5,6 +5,7 @@ from PIL import Image, ImageEnhance
 from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
 import cv2
+import os
 
 #Put instructions for the user - TO DO
 Intro = "If you’re here, you must be someone who loves to find bacteria concentrations on a budget. Who needs MATLAB anyway? Before you go on to use the website, please read the instructions carefully. Any further questions can be directed to gvahelp@gmail.com. We sincerely hope you enjoy the website. -    A couple of GVA-holes"
@@ -49,7 +50,6 @@ def canvas(cropped_image):
         width = width*0.25,
         key = f"{i}" + f"{file_name}"
         )
-    st.write(aspect_ratio)
     return canvas_result1
 #function to crop images into 3 separate things
 def image_cropper(num_regions):
@@ -86,13 +86,17 @@ def GVAcalc(colonies):
         x2 = np.min(colonies) - tiploc
         CFUs = df*len(colonies)/(V/1000*np.absolute(np.power(x2,3)-np.power(x1,3))/np.power(h,3))
         st.write("CFUs/mL",CFUs)
-
+    '''temp_data = [CFUs, ]
+       data.append(CFUs, )'''
 
 # Upload image through Streamlit, get all necessary inputs
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
 num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
 df = st.number_input("Dilution Factor", min_value=1, max_value=10000, value=100)
 V = st.number_input("Assay Volume (µL)", min_value = 1, max_value = 1000, value = 150)
+
+#define empty data list - messing around with trying to get it to output data to text file
+data = []
 
 if uploaded_images is not None:
     for uploaded_image in uploaded_images:
