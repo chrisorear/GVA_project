@@ -6,6 +6,7 @@ from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
 import cv2
 import os
+import csv
 
 #Put instructions for the user - TO DO
 Intro = "If you’re here, you must be someone who loves to find bacteria concentrations on a budget. Who needs MATLAB anyway? Before you go on to use the website, please read the instructions carefully. Any further questions can be directed to gvahelp@gmail.com. We sincerely hope you enjoy the website. -    A couple of GVA-holes"
@@ -13,6 +14,7 @@ Instructions = "Instructions: First, upload your images (maximum of three at a t
 
 #configure webpage
 st.set_page_config(page_title="GVA-holes", page_icon="🆘", layout="wide")
+
 st.markdown(Intro)
 st.markdown(Instructions)
 #all functions are here
@@ -80,14 +82,23 @@ def GVAcalc(colonies):
     colonies.remove(min(colonies))
     #GVA calculations
     if len(colonies) >= 1:
-        st.write("Pipette Length in pixels", h)
+        #st.write("Pipette Length in pixels", h)
         #st.write("Colony Locations", colonies)
         x1 = np.max(colonies) - tiploc
         x2 = np.min(colonies) - tiploc
         CFUs = df*len(colonies)/(V/1000*np.absolute(np.power(x2,3)-np.power(x1,3))/np.power(h,3))
         st.write("CFUs/mL",CFUs)
-    '''temp_data = [CFUs, ]
-       data.append(CFUs, )'''
+        num_colonies = len(colonies)
+        img_name = file_name
+        pipette_loc = i+1
+        data = [num_colonies, img_name, pipette_loc, CFUs]
+        return data
+        #st.write(pipette_loc, img_name, num_colonies)
+def write_to_csv(data):
+    with open("results.csv", mode="a", newline="") as file:
+        writer = csv.writer(file)
+        df_results = pd.DataFrame(data,columns=['Number of Colonies','Image Name','Pipette Tip','CFUs/mL'])
+        writer.writerow(data)
 
 # Upload image through Streamlit, get all necessary inputs
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
@@ -96,7 +107,7 @@ df = st.number_input("Dilution Factor", min_value=1, max_value=10000, value=100)
 V = st.number_input("Assay Volume (µL)", min_value = 1, max_value = 1000, value = 150)
 
 #define empty data list - messing around with trying to get it to output data to text file
-data = []
+results_data = []
 
 if uploaded_images is not None:
     for uploaded_image in uploaded_images:
@@ -113,5 +124,7 @@ if uploaded_images is not None:
             colonies = colonyfunc(drawable)
             st.write(colonies)
             if colonies is not None:
-                GVAcalc(colonies)
-      
+                results_data.append(GVAcalc(colonies))
+
+if st.button("Write results to .csv"):
+    write_to_csv(results_data)

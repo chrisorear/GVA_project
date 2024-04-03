@@ -37,11 +37,27 @@ app.layout = html.Div([
         # Allow multiple files to be uploaded
         multiple=True
     ),
+    html.Label('# Pipette tips per FOV: ' ),
+    dcc.Input(
+        id='input-number',
+        type='number',
+        value=3
+    ),
+    html.Div(id= 'value-container'),
     html.Div(id='output-image-upload'),
     html.Div(id='cropped-image-container'),
     html.Div(id='annotation-container'),
     html.Div(id='GVA-data')
     ])
+
+@app.callback(
+    Output('value-container', 'children'),
+    [Input('input-number', 'value')]
+)
+def update_output_div(input_value):
+    global Value
+    Value = input_value
+    return f'Pipettes: {Value}'
 
 def rotator(img):
     width, height = img.size
@@ -112,8 +128,9 @@ def cropper(json_data,img):
                                     hide_buttons=['save'])
                         ]))
     return cropped_images
+
 @app.callback(Output('annotation-container', 'children'),
-              [Input(f'cropped-image-{i}', 'json_data') for i in range(4)],prevent_initial_call=True)
+            [Input(f'cropped-image-{i}', 'json_data') for i in range(3)],prevent_initial_call=True)
 def update_annotation_table(*json_data):
     table_data = []
     for i, data in enumerate(json_data, start=1):
@@ -131,20 +148,18 @@ def update_annotation_table(*json_data):
                     'ScaleX': obj.get('scaleX', ''),
                     'Stroke Width': obj.get('strokeWidth', '')
                 })
+#put in code to calculate gva here - first, pull from canvas index, then use type to find pipette tip length
+#then, use left of all path/circle objects to calculate the gva math
+    for i in range(3):
+        table_data = table_data['Canvas Index' == {i}]
+        
+
     return html.Table([
         html.Thead(html.Tr([html.Th(col) for col in table_data[0].keys()])),
         html.Tbody([
             html.Tr([html.Td(row[col]) for col in row.keys()]) for row in table_data
         ])
     ])
-
-'''@app.callback(Output('GVA-data', 'children'),
-              [Input('annotation-container', 'data')])
-
-def GVAcalculator(data):
-    GVA_table = []
-    for i in range(4):
-       data.''' 
 
 
 if __name__ == '__main__':
