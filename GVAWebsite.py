@@ -94,19 +94,30 @@ def GVAcalc(colonies):
         data = [num_colonies, img_name, pipette_loc, CFUs]
         return data
         #st.write(pipette_loc, img_name, num_colonies)
-def write_to_csv(data):
+def write_to_csv(data, filepath):
+    os.chdir(filepath)
     with open("results.csv", mode="a", newline="") as file:
         writer = csv.writer(file)
-        df_results = pd.DataFrame(data,columns=['Number of Colonies','Image Name','Pipette Tip','CFUs/mL'])
         writer.writerow(data)
-
+def write_to_excel(data, filepath):
+    #function to save data to excel file
+    os.chdir(filepath)
+    df = pd.DataFrame(data)  # Convert the list into a DataFrame
+    headers = ['Number of Colonies Selected', 'File Name', 'Pipette Tip Location', 'CFUs/mL']
+    header_df = pd.DataFrame(headers)
+    if os.path.exists("results.xlsx") == False:
+        header_df.to_excel("results.xlsx", header=False, index=False)
+        df.to_excel("results.xlsx", header=False, index=False)
+    else:
+        df.to_excel("results.xlsx", header=False, index=False)
 # Upload image through Streamlit, get all necessary inputs
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
 num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
 df = st.number_input("Dilution Factor", min_value=1, max_value=10000, value=100)
 V = st.number_input("Assay Volume (µL)", min_value = 1, max_value = 1000, value = 150)
+filepath = st.text_input("Please type the filepath of the folder where you would like to save your results.")
 
-#define empty data list - messing around with trying to get it to output data to text file
+#define empty data list to append results from each canvas to
 results_data = []
 
 if uploaded_images is not None:
@@ -126,5 +137,5 @@ if uploaded_images is not None:
             if colonies is not None:
                 results_data.append(GVAcalc(colonies))
 
-if st.button("Write results to .csv"):
-    write_to_csv(results_data)
+if st.button("Write results to .xlsx"):
+    write_to_excel(results_data, filepath)
