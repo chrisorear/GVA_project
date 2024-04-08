@@ -8,6 +8,7 @@ import cv2
 import os
 import csv
 from openpyxl import load_workbook
+import openpyxl
 
 #Put instructions for the user - TO DO
 Intro = "If you’re here, you must be someone who loves to find bacteria concentrations on a budget. Who needs MATLAB anyway? Before you go on to use the website, please read the instructions carefully. Any further questions can be directed to gvahelp@gmail.com. We sincerely hope you enjoy the website. -    A couple of GVA-holes"
@@ -101,21 +102,21 @@ def write_to_csv(data, filepath):
     with open("results.csv", mode="a", newline="") as file:
         writer = csv.writer(file, delimiter = ' ')
         writer.writerow(data)
+
 def write_to_excel(data, filepath):
     os.chdir(filepath)
     headers = ['Number of Colonies Selected', 'File Name', 'Pipette Tip Location', 'CFUs/mL']
     df = pd.DataFrame(data, columns=headers)
-    # Check if the file exists
+
     if os.path.exists("results.xlsx"):
         # If the file exists, open it and append new data
         book = load_workbook("results.xlsx")
-        writer = pd.ExcelWriter("results.xlsx", engine='openpyxl')
-        writer.book = book
-        writer.sheets = {ws.title: ws for ws in book.worksheets}
-        reader = pd.read_excel(r'results.xlsx')
-        df.to_excel(writer, index=False, header=False, startrow=len(reader)+1)
-        writer.save()
-        writer.close()
+        sheet = book.active  # Get the active sheet
+        for row in df.values:
+            row = row.tolist()
+            sheet.append(row)
+        book.save("results.xlsx")
+        book.close()
     else:
         # If the file doesn't exist, create a new one
         df.to_excel("results.xlsx", index=False, header=headers)
@@ -150,3 +151,6 @@ if uploaded_images is not None:
 
 if st.button("Write results to .csv"):
     write_to_csv(results_data, filepath)
+
+if st.button("Write to .xlsx"):
+    write_to_excel(results_data, filepath)
