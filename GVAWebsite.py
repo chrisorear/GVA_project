@@ -149,8 +149,5 @@ if uploaded_images is not None:
             if colonies is not None:
                 results_data.append(GVAcalc(colonies))
 
-if st.button("Write results to .csv"):
-    write_to_csv(results_data, filepath)
-
 if st.button("Write to .xlsx"):
     write_to_excel(results_data, filepath)
