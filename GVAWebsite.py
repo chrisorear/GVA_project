@@ -7,6 +7,7 @@ from streamlit_cropper import st_cropper
 import cv2
 import os
 import csv
+from openpyxl import load_workbook
 
 #Put instructions for the user - TO DO
 Intro = "If you’re here, you must be someone who loves to find bacteria concentrations on a budget. Who needs MATLAB anyway? Before you go on to use the website, please read the instructions carefully. Any further questions can be directed to gvahelp@gmail.com. We sincerely hope you enjoy the website. -    A couple of GVA-holes"
@@ -57,7 +58,7 @@ def canvas(cropped_image):
 def image_cropper(num_regions):
     for i in range(num_regions):
         st.subheader(f"{file_name}" + " " + f"Crop Region {i+1}")
-        box_coords = ((i)/3 * width, (i+1)/3 * width, 0, 4/5*height)
+        box_coords = ((i)/num_regions * width, (i+1)/num_regions * width, 0, 4/5*height)
         # Perform cropping with a unique key for each st_cropper widget
         cropped_images.append(st_cropper(adjusted_image, default_coords = box_coords, key=f"cropper_{i}" + f"{file_name}", realtime_update= True))
     return cropped_images   
@@ -94,22 +95,32 @@ def GVAcalc(colonies):
         data = [num_colonies, img_name, pipette_loc, CFUs]
         return data
         #st.write(pipette_loc, img_name, num_colonies)
+#functions to write data to a csv or an excel file (using excel file output right now because it's cleaner)
 def write_to_csv(data, filepath):
     os.chdir(filepath)
     with open("results.csv", mode="a", newline="") as file:
-        writer = csv.writer(file)
+        writer = csv.writer(file, delimiter = ' ')
         writer.writerow(data)
 def write_to_excel(data, filepath):
-    #function to save data to excel file
     os.chdir(filepath)
-    df = pd.DataFrame(data)  # Convert the list into a DataFrame
     headers = ['Number of Colonies Selected', 'File Name', 'Pipette Tip Location', 'CFUs/mL']
-    header_df = pd.DataFrame(headers)
-    if os.path.exists("results.xlsx") == False:
-        header_df.to_excel("results.xlsx", header=False, index=False)
-        df.to_excel("results.xlsx", header=False, index=False)
+    df = pd.DataFrame(data, columns=headers)
+    # Check if the file exists
+    if os.path.exists("results.xlsx"):
+        # If the file exists, open it and append new data
+        book = load_workbook("results.xlsx")
+        writer = pd.ExcelWriter("results.xlsx", engine='openpyxl')
+        writer.book = book
+        writer.sheets = {ws.title: ws for ws in book.worksheets}
+        reader = pd.read_excel(r'results.xlsx')
+        df.to_excel(writer, index=False, header=False, startrow=len(reader)+1)
+        writer.save()
+        writer.close()
     else:
-        df.to_excel("results.xlsx", header=False, index=False)
+        # If the file doesn't exist, create a new one
+        df.to_excel("results.xlsx", index=False, header=headers)
+
+   
 # Upload image through Streamlit, get all necessary inputs
 uploaded_images = st.file_uploader("Upload image files here", type=["jpg", "jpeg", "png"], accept_multiple_files= True)
 num_regions = st.number_input("Number of regions to crop:", min_value=1, max_value=10, value=3)
@@ -137,5 +148,5 @@ if uploaded_images is not None:
             if colonies is not None:
                 results_data.append(GVAcalc(colonies))
 
-if st.button("Write results to .xlsx"):
-    write_to_excel(results_data, filepath)
+if st.button("Write results to .csv"):
+    write_to_csv(results_data, filepath)
